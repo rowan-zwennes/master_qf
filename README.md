@@ -13,7 +13,7 @@ Market makers on perpetual futures pay or receive a funding payment on their ope
 The thesis:
 
 - extends the GLT framework with an analytical correction for the discrete funding settlement. The payment is smoothed into a continuous drain in a short window before each settlement, so the ODE reduction of GLT is preserved, and the model sets the length of that window itself;
-- adds a LightGBM drift signal trained on Level-2 order-book features (order-flow imbalance, book imbalance, VPIN, and others);
+- adds a LightGBM drift signal trained on Level-2 order-book features (order-flow imbalance, book imbalance, VPIN, and others), compared against a Ridge baseline;
 - evaluates six strategies in a fee-exact, queue-conservative replay of 94 days of self-recorded Binance BTCUSDT data, with a 64-day daily walk-forward out-of-sample period, plus a Monte Carlo stress suite with synthetic funding paths.
 
 Main findings: at the retail fee tier, fees and adverse selection outweigh the captured spread for every strategy. The learned signal works mainly as a "risk clock" that predicts when a quote is about to be hit; used defensively, it cuts GLT's mean daily loss by 26% on 27% fewer fills. The funding correction activates where the theory predicts, and its value grows with the size of the funding rate.
@@ -33,7 +33,7 @@ Main findings: at the retail fee tier, fees and adverse selection outweigh the c
 
 ```
 Code Files/
-├── python/   data pipeline, HJB solvers, calibration, simulator, analyses
+├── python/   data pipeline, machine learning, HJB solvers, calibration, simulator, analyses
 └── c++/      replay engine and latency benchmark
 ```
 
@@ -41,32 +41,43 @@ Code Files/
 
 | Group | Files |
 |---|---|
-| Data recording | `recorder.py` (Binance WebSocket: book diffs, snapshots, trades, mark price) |
-| Pipeline | `markprice_ffill.py` (stage 01), `book_reconstruct.py` (02), `feature_engineering.py` (03), `label_split.py` (04), `validate_*.py` (checks per stage), `data_gap_handler.py`, `pipeline_utils.py` |
-| HJB / control | `hjb_asymptotic_reference.py` (Regime I closed form), `hjb_riccati_solver.py` (Regime II backward induction near settlement), `hjb_thomas_solver.py`, `hjb_epoch_stitching.py`, `hjb_regime_boundary.py`, `hjb_principal_eigenvector.py`, `hjb_lut_builder.py` |
-| Calibration | `calibrate_intensity.py`, `calibrate_intensity_rolling.py`, `calibrate_volatility.py`, `calibrate_vpin.py`, `select_intensity_window.py`, `describe_rho.py` |
-| Simulation | `run_simulation.py` (six-strategy replay), `sim_quote_engine.py` (quote rules), `fill_core_reference.py` (Python twin of the C++ fill core), `run_simulation_freshbook.py` |
-| Stress tests | `stress_engine.py`, `stress_funding_ou.py`, `stress_q_sweep.py`, `fetch_altcoin_funding.py`, `rebuild_funding_table.py` |
-| Analysis and figures | `analysis_*.py`, `fig_*.py`, `gen_results_tables.py`, `statistical_tests.py`, `run_statistical_tests.py` |
+| Data pipeline | `recorder.py` (Binance WebSocket: book diffs, snapshots, trades, mark price), `book_reconstruct.py` (100 ms top-20 book), `markprice_ffill.py`, `data_gap_handler.py`, `feature_engineering.py` (one-second feature grid), `label_split.py` (multi-horizon labels and train/test split), `pipeline_utils.py`, `validate_data.py`, `validate_book_reconstruct.py`, `validate_book.py`, `make_data_section_assets.py`, `trade_size_stats.py` |
+| Machine learning | `ml_train.py` (walk-forward LightGBM with purged cross-validation and Optuna tuning), `ml_predict.py` (out-of-sample drift streams), `ml_baseline_ridge.py`, `compare_models.py` (Diebold–Mariano test), `compare_l2_huber.py`, `compute_purge_window.py`, `select_horizon.py`, `ml_crossfold_stability.py`, `gen_crossfold_table.py`, `ml_preanalysis_diagnostics.py`, `pre_analysis_tests.py`, `export_pre_analysis.py`, `ml_shap.py` (SHAP attributions), `check_directional_accuracy.py` |
+| Calibration | `calibrate_intensity.py`, `calibrate_intensity_rolling.py` (fill intensity *(A, k)*), `select_intensity_window.py`, `validate_intensity_stride.py`, `validate_intensity_exp.py`, `calibrate_volatility.py`, `validate_sigma.py`, `describe_rho.py`, `calibrate_vpin.py` |
+| HJB and quotes | `hjb_principal_eigenvector.py`, `hjb_riccati_solver.py` (backward induction near settlement), `hjb_thomas_solver.py`, `hjb_lut_builder.py`, `hjb_epoch_stitching.py`, `hjb_regime_boundary.py`, `hjb_asymptotic_reference.py` (closed-form GLT check), `sim_quote_engine.py` (quote rules for the six strategies), `quantify_ml_interp_error.py`, `analysis_decaying_drift.py`, `validate_gaussian_asymptotic.py`, `validate_cara_approx.py`, `validate_sref_approx.py`, `validate_boundary_layer.py` |
+| Replay and stress tests | `run_simulation.py` (six-strategy replay with last-in-queue fills and exact fee and funding accounting), `fill_core_reference.py`, `run_simulation_freshbook.py`, `export_replay_binary.py`, `validate_cpp_parity.py`, `stress_engine.py`, `stress_funding_ou.py`, `stress_q_sweep.py`, `rebuild_funding_table.py`, `fetch_altcoin_funding.py` |
+| Results and statistics | `statistical_tests.py`, `run_statistical_tests.py` (block bootstrap), `analysis_*.py`, `fig_*.py`, `sensitivity_common.py`, `gen_results_tables.py` |
 
 ### C++
 
-`hft_engine`: an event-by-event replay engine (order book, last-in-queue fill simulation, P&L tracking, GLT and funding-correction quotes from a precomputed lookup table) and a latency benchmark. `validate_cpp_parity.py` checks that it reproduces the Python simulator.
+`hft_engine` is an event-by-event replay engine: order book and queue position, last-in-queue fill simulation, GLT quotes with the funding correction from a precomputed lookup table, and P&L tracking. It also contains the latency benchmark. `validate_cpp_parity.py` checks fill by fill that it reproduces the Python simulator. `fill_core_runner` is a small test program for the fill core.
+
+## Requirements
+
+- Python 3.14 (developed on 3.14.2) and the packages in `Code Files/python/requirements.txt`:
+
+  ```
+  pip install -r "Code Files/python/requirements.txt"
+  ```
+
+- CMake 3.20+ and a C++20 compiler for the engine. It has no external dependencies.
+
+## Building the C++ engine
+
+```
+cd "Code Files/c++"
+cmake -S . -B build
+cmake --build build -j
+```
+
+This produces `build/hft_engine` and `build/fill_core_runner`:
 
 ```
 hft_engine replay --data day.hftr [--lut lut.bin] [--strategies 1,2,3,4] [--latency-out lat.hftb]
 hft_engine bench  [--lut lut.bin] [--out lat.hftb]
 ```
 
-## Requirements
-
-Python 3.11+ and the packages in `Code Files/python/requirements.txt`:
-
-```
-pip install -r "Code Files/python/requirements.txt"
-```
-
-The C++ engine needs a C++17 compiler.
+The replay input (`.hftr`) is written by `export_replay_binary.py`, and the lookup table by `hjb_lut_builder.py`.
 
 ## Data
 
