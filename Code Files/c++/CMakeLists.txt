@@ -14,30 +14,30 @@ add_compile_options(-Wall -Wextra -Wpedantic -O3 -march=native)
 # no external dependencies: the engine reads a flat binary replay file
 
 add_executable(hft_engine
-    src/main.cpp
-    src/order_book.cpp
-    src/queue_position.cpp
-    src/glt_asymptotic.cpp
-    src/riccati_lut.cpp
-    src/regime_switch.cpp
-    src/reservation_price.cpp
-    src/fill_simulator.cpp
-    src/pnl_tracker.cpp
-    src/strategy.cpp
-    src/replay_reader.cpp
-    src/latency_bench.cpp
-    src/epoch_clock.cpp
-    src/params_atomic.cpp
-    src/funding_correction.cpp
-    src/ema_drift.cpp
+    main.cpp
+    order_book.cpp
+    queue_position.cpp
+    glt_asymptotic.cpp
+    riccati_lut.cpp
+    regime_switch.cpp
+    reservation_price.cpp
+    fill_simulator.cpp
+    pnl_tracker.cpp
+    strategy.cpp
+    replay_reader.cpp
+    latency_bench.cpp
+    epoch_clock.cpp
+    params_atomic.cpp
+    funding_correction.cpp
+    ema_drift.cpp
 )
 
-target_include_directories(hft_engine PRIVATE include)
+target_include_directories(hft_engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # fill-core scenario runner, built from the queue and fill units only
 add_executable(fill_core_runner
-    src/queue_position.cpp
-    src/fill_simulator.cpp
-    tests/fill_core_runner.cpp
+    queue_position.cpp
+    fill_simulator.cpp
+    fill_core_runner.cpp
 )
-target_include_directories(fill_core_runner PRIVATE include)
+target_include_directories(fill_core_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
