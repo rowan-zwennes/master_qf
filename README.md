@@ -6,6 +6,8 @@ Code for my MSc thesis in Quantitative Finance (Erasmus University Rotterdam, 20
 
 Supervisor: Maria Grith
 
+📄 **Thesis (PDF):** [Zwennes_2026_MSc_thesis.pdf](Zwennes_2026_MSc_thesis.pdf) (revised version, 28 October 2026)
+
 ## What the thesis does
 
 Market makers on perpetual futures pay or receive a funding payment on their open position at fixed times (every eight hours on Binance). Classical inventory models such as Guéant–Lehalle–Tapia (GLT) assume there is no such cost of carry.
@@ -32,6 +34,7 @@ Main findings: at the retail fee tier, fees and adverse selection outweigh the c
 ## Repository layout
 
 ```
+Zwennes_2026_MSc_thesis.pdf   the thesis (extended version of the preprint)
 Code Files/
 ├── python/   data pipeline, machine learning, HJB solvers, calibration, simulator, analyses
 └── c++/      replay engine and latency benchmark
