@@ -7,6 +7,7 @@ Code for my MSc thesis in Quantitative Finance (Erasmus University Rotterdam, 20
 Supervisor: Maria Grith
 
 📄 **Thesis (PDF):** [Zwennes_2026_MSc_thesis.pdf](Zwennes_2026_MSc_thesis.pdf) (revised version, 28 October 2026)
+
 📄 **Preprint (condensed and revised):** Zwennes, R. (2026). *Market Making in Cryptocurrency Perpetual Futures with Discrete Funding Settlements: A Stochastic Control Extension and a Machine-Learned Risk Clock.* SSRN Working Paper. https://ssrn.com/abstract=7744218
 
 ## What the thesis does
@@ -86,8 +87,7 @@ The replay input (`.hftr`) is written by `export_replay_binary.py`, and the look
 
 ## Data
 
-The raw order-book data (about 2 × 10⁸ trades and 8 × 10⁷ book updates, recorded 19 January – 23 April 2026) is not included because of its size. It can be re-recorded with `recorder.py`. Several scripts still point to the local data path used during the thesis (`/mnt/rowan_thuis/...`); change `DEFAULT_BASE` / `--base` to your own location.
-
+The raw order-book data (about 2 × 10⁸ trades and 8 × 10⁷ book updates, recorded 19 January – 23 April 2026) is not included because of its size. The raw order-book recordings (about 2 × 10⁸ trades and 8 × 10⁷ book updates, recorded 19 January – 23 April 2026) are not included because of their size; they are available from the author on request. New data can be recorded with `recorder.py`. Several scripts still point to the local data path used during the thesis (`/mnt/rowan_thuis/...`); change `DEFAULT_BASE` / `--base` to your own location. 
 ## Citation
 
 Please cite the preprint:
