@@ -7,10 +7,11 @@ Code for my MSc thesis in Quantitative Finance (Erasmus University Rotterdam, 20
 Supervisor: Maria Grith
 
 📄 **Thesis (PDF):** [Zwennes_2026_MSc_thesis.pdf](Zwennes_2026_MSc_thesis.pdf) (revised version, 28 October 2026)
+📄 **Preprint (condensed and revised):** Zwennes, R. (2026). *Market Making in Cryptocurrency Perpetual Futures with Discrete Funding Settlements: A Stochastic Control Extension and a Machine-Learned Risk Clock.* SSRN Working Paper. https://ssrn.com/abstract=7744218
 
 ## What the thesis does
 
-Market makers on perpetual futures pay or receive a funding payment on their open position at fixed times (every eight hours on Binance). Classical inventory models such as Guéant–Lehalle–Tapia (GLT) assume there is no such cost of carry.
+Market makers on perpetual futures pay or receive a funding payment on their open position at fixed times (every eight hours on Binance). Classical inventory models such as Guéant–Lehalle–Fernandez-Tapia (GLT) assume there is no such cost of carry.
 
 The thesis:
 
@@ -30,6 +31,7 @@ Main findings: at the retail fee tier, fees and adverse selection outweigh the c
 | 4 | `glt_ml_drift` | LightGBM | no |
 | 5 | `glt_funding` | none | yes |
 | 6 | `glt_full_hybrid` | LightGBM | yes |
+The preprint calls strategy 6 the *full controller*.
 
 ## Repository layout
 
@@ -88,6 +90,10 @@ The raw order-book data (about 2 × 10⁸ trades and 8 × 10⁷ book updates, re
 
 ## Citation
 
-> Zwennes, R. (2026). *Optimal Market Making in Cryptocurrency Perpetual Futures: A Stochastic Control Extension for Discrete Funding Settlements and Nonlinear Alpha Signals.* MSc thesis, Erasmus School of Economics, Erasmus University Rotterdam.
+Please cite the preprint:
 
-A shortened version of the thesis is in preparation as a preprint.
+> Zwennes, R. (2026). *Market Making in Cryptocurrency Perpetual Futures with Discrete Funding Settlements: A Stochastic Control Extension and a Machine-Learned Risk Clock.* SSRN Working Paper. https://ssrn.com/abstract=7744218
+
+The full thesis (extended version, with complete proofs and supplementary results):
+
+> Zwennes, R. (2026). *Optimal Market Making in Cryptocurrency Perpetual Futures: A Stochastic Control Extension for Discrete Funding Settlements and Nonlinear Alpha Signals.* MSc thesis, Erasmus School of Economics, Erasmus University Rotterdam.
